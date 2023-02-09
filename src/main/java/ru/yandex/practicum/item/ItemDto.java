@@ -1,10 +1,16 @@
 package ru.yandex.practicum.item;
 
+import lombok.Value;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+@Value
 public class ItemDto {
-    Long id;
+    @NotBlank(message = "Имя не указано")
     String name;
+    @NotBlank(message = "Описание не может быть пустым")
     String description;
-    boolean available;
-    String owner;
-    String request;
+    @NotNull(message = "Доступность должна быть указана")
+    Boolean available;
 }

@@ -5,6 +5,6 @@ import java.util.Date;
 public class ItemRequest {
     Long id;
     String description;
-    Long requestor;
+    Long requester;
     Date created;
 }

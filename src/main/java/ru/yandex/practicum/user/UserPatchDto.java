@@ -3,13 +3,10 @@ package ru.yandex.practicum.user;
 import lombok.Value;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 
 @Value
-public class UserDto {
-    @NotBlank(message = "Имя пользователя не указано")
+public class UserPatchDto {
     String name;
     @Email(message = "Неправильный email")
-    @NotBlank(message = "Email не указан")
     String email;
 }
