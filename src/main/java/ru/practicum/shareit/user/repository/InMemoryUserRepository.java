@@ -11,7 +11,7 @@ import java.util.*;
 @Component
 @Slf4j
 public class InMemoryUserRepository implements UserRepository {
-    public static Map<Long, User> userMap = new HashMap<>();
+    public final Map<Long, User> userMap = new HashMap<>();
     private long currentId = 1;
 
     @Override
