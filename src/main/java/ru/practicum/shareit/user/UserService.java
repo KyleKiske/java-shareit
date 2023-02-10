@@ -2,9 +2,6 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.EmailAlreadyExistException;
-import ru.practicum.shareit.exception.EmptyEmailException;
-import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
@@ -22,7 +19,7 @@ public class UserService {
     }
 
     public User redactUser(Long userId, UserPatchDto userPatchDto) {
-        User user = userRepository.getUserById(userId).orElseThrow(() -> new EmptyEmailException(""));
+        User user = userRepository.getUserById(userId);
 
         if (userPatchDto.getEmail() != null) {
             emailDuplicateCheck(userPatchDto.getEmail());
@@ -35,7 +32,7 @@ public class UserService {
     }
 
     public User getUserById(Long userId) {
-        return userRepository.getUserById(userId).orElseThrow(() -> new UserNotFoundException(""));
+        return userRepository.getUserById(userId);
     }
 
     public List<User> getAllUsers() {
@@ -47,9 +44,7 @@ public class UserService {
     }
 
     private void emailDuplicateCheck(String email) {
-        userRepository.getUserByEmail(email).ifPresent(user -> {
-            throw new EmailAlreadyExistException(email);
-        });
+        userRepository.checkUserByEmail(email);
     }
 
 }

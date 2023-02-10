@@ -4,7 +4,6 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface UserRepository {
@@ -13,9 +12,9 @@ public interface UserRepository {
 
     User redactUser(long userId, User user);
 
-    Optional<User> getUserById(long userId);
+    User getUserById(long userId);
 
-    Optional<User> getUserByEmail(String email);
+    void checkUserByEmail(String email);
 
     List<User> getAllUsers();
 

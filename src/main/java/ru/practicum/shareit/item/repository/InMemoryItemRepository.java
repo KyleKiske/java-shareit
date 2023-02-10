@@ -2,12 +2,12 @@ package ru.practicum.shareit.item.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.Item;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,8 +40,12 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> getItemById(long id) {
-        return Optional.ofNullable(itemMap.get(id));
+    public Item getItemById(long id) {
+        Item item = itemMap.get(id);
+        if (item == null){
+            throw new ItemNotFoundException("");
+        }
+        return item;
     }
 
     @Override

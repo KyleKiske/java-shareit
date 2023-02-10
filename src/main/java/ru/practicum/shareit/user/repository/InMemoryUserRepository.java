@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.EmptyEmailException;
 import ru.practicum.shareit.exception.EmailAlreadyExistException;
+import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.user.User;
 
 import java.util.*;
@@ -42,16 +43,23 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> getUserById(long userId) {
-        return Optional.ofNullable(userMap.get(userId));
+    public User getUserById(long userId) {
+        User user = userMap.get(userId);
+        if (user == null){
+            throw new UserNotFoundException(String.valueOf(userId));
+        }
+        return user;
     }
 
     @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userMap.values()
+    public void checkUserByEmail(String email) {
+        Optional<User> users = userMap.values()
                 .stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
+        if (users.isPresent()){
+            throw new EmailAlreadyExistException(email);
+        }
     }
 
     @Override

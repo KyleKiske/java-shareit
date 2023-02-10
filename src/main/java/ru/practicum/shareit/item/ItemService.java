@@ -25,8 +25,8 @@ public class ItemService {
         return itemRepository.addItem(item);
     }
 
-    Item redactItem(long userId, long itemId, ItemPatchDto itemPatchDto) {
-        Item itemFromRepo = itemRepository.getItemById(itemId).orElseThrow(() -> new ItemNotFoundException("Вещь не найдена"));
+    public Item redactItem(long userId, long itemId, ItemPatchDto itemPatchDto) {
+        Item itemFromRepo = itemRepository.getItemById(itemId);
         if (itemFromRepo.getOwner() != userId) {
             throw new WrongUserException("У вас нет доступа к данной вещи.");
         }
@@ -34,19 +34,18 @@ public class ItemService {
         return itemRepository.redactItem(itemId, item);
     }
 
-    Item getItemById(long itemId) {
-        return itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("Вещь с данным id не найдена"));
+    public Item getItemById(long itemId) {
+        return itemRepository.getItemById(itemId);
     }
 
-    List<Item> searchItem(String text) {
+    public List<Item> searchItem(String text) {
         if (text.isBlank()) {
             return List.of();
         }
         return itemRepository.searchItem(text);
     }
 
-    List<Item> getAllItemsOfUser(Long userId) {
+    public List<Item> getAllItemsOfUser(Long userId) {
         return itemRepository.getAllItemsOfUser(userId);
     }
 
