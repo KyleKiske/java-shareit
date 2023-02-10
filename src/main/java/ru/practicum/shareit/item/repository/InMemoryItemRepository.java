@@ -42,7 +42,7 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public Item getItemById(long id) {
         Item item = itemMap.get(id);
-        if (item == null){
+        if (item == null) {
             throw new ItemNotFoundException("");
         }
         return item;

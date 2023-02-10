@@ -45,7 +45,7 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public User getUserById(long userId) {
         User user = userMap.get(userId);
-        if (user == null){
+        if (user == null) {
             throw new UserNotFoundException(String.valueOf(userId));
         }
         return user;
@@ -57,7 +57,7 @@ public class InMemoryUserRepository implements UserRepository {
                 .stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
-        if (users.isPresent()){
+        if (users.isPresent()) {
             throw new EmailAlreadyExistException(email);
         }
     }
