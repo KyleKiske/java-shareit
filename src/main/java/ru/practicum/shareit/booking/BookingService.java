@@ -32,10 +32,10 @@ public class BookingService {
         boolean endBeforeStart = booking.getEnd().isBefore(booking.getStart());
         boolean startBeforeNow = booking.getStart().isBefore(LocalDateTime.now());
 
-        if (startBeforeNow){
+        if (startBeforeNow) {
             throw new BadDateException(
                     "Дата начала бронирования раньше текущего времени." + booking.getStart().toString());
-        }else if  (endBeforeStart) {
+        } else if (endBeforeStart) {
             throw new BadDateException(
                     "Дата начала аренды позже даты окончания\n"
                             + booking.getStart().toString() + "\n"
