@@ -32,8 +32,14 @@ public class BookingService {
         boolean endBeforeStart = booking.getEnd().isBefore(booking.getStart());
         boolean startBeforeNow = booking.getStart().isBefore(LocalDateTime.now());
 
-        if (startBeforeNow || endBeforeStart) {
-            throw new BadDateException(booking.getStart().toString());
+        if (startBeforeNow){
+            throw new BadDateException(
+                    "Дата начала бронирования раньше текущего времени." + booking.getStart().toString());
+        }else if  (endBeforeStart) {
+            throw new BadDateException(
+                    "Дата начала аренды позже даты окончания\n"
+                            + booking.getStart().toString() + "\n"
+                            + booking.getEnd().toString());
         }
 
         if (item.getAvailable()) {
@@ -44,7 +50,6 @@ public class BookingService {
             throw new ItemNotAvailableException(item.getId().toString());
         }
 
-        System.out.println(booking);
         return bookingRepository.save(booking);
     }
 
@@ -52,7 +57,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException(String.valueOf(bookingId)));
 
-        if (booking.getItem().getOwner().getId() != (userId)) {
+        if (booking.getItem().getOwner().getId() != userId) {
             throw new WrongUserException("У вас нет доступа к данному бронированию");
         }
         if (booking.getStatus() != BookingStatus.WAITING) {
@@ -95,7 +100,6 @@ public class BookingService {
 
     public List<Booking> getBookingsByBooker(long bookerId, String state) {
         userService.getUserById(bookerId);
-        System.out.println(state);
         switch (state) {
             case "ALL":
                 return bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);

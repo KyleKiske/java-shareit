@@ -14,10 +14,10 @@ public class BookingMapper {
         return booking;
     }
 
-    public NotCurrentBooking bookingToNotCurrent(Booking booking1) {
-        if (booking1 == null) {
+    public NotCurrentBooking bookingToNotCurrent(Booking booking) {
+        if (booking == null) {
             return null;
         }
-        return new NotCurrentBooking(booking1.getId(), booking1.getBooker().getId());
+        return new NotCurrentBooking(booking.getId(), booking.getBooker().getId(), booking.getStart(), booking.getEnd());
     }
 }

@@ -3,9 +3,33 @@ package ru.practicum.shareit.item;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface ItemMapper {
+public class ItemMapper {
 
-    Item dtoToItem(ItemDto itemDto);
+    public Item dtoToItem(ItemDto itemDto) {
+        if (itemDto == null) {
+            return null;
+        }
+        Item item = new Item();
 
-    Item patchDtoToItem(ItemPatchDto itemPatchDto);
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
+
+        return item;
+    }
+
+    public Item patchDtoToItem(ItemPatchDto itemPatchDto) {
+        if (itemPatchDto == null) {
+            return null;
+        }
+
+        Item item = new Item();
+
+        item.setId(itemPatchDto.getId());
+        item.setName(itemPatchDto.getName());
+        item.setDescription(itemPatchDto.getDescription());
+        item.setAvailable(itemPatchDto.getAvailable());
+
+        return item;
+    }
 }
