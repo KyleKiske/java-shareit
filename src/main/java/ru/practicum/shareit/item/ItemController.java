@@ -28,8 +28,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public Item getItemById(@PathVariable long itemId) {
-        return itemService.getItemById(itemId);
+    public Item getItemById(@PathVariable long itemId,
+                            @RequestHeader(name = "X-Sharer-User-Id") long userId) {
+        return itemService.getItemById(itemId, userId);
     }
 
     @PatchMapping("/{itemId}")
@@ -47,5 +48,12 @@ public class ItemController {
     @GetMapping("/search")
     public List<Item> searchItem(@RequestParam String text) {
         return itemService.searchItem(text);
+    }
+
+    @PostMapping("{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(name = "X-Sharer-User-Id") long userId,
+                              @PathVariable long itemId,
+                              @Valid @RequestBody CommentPostDto comment) {
+        return itemService.addComment(userId, itemId, comment);
     }
 }
