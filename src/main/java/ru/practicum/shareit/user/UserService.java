@@ -2,7 +2,8 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.exception.EmailAlreadyExistException;
+import ru.practicum.shareit.exception.UserNotFoundException;
 
 import java.util.List;
 
@@ -15,11 +16,11 @@ public class UserService {
 
     public User createUser(UserDto userDto) {
         User user = userMapper.dtoToUser(userDto);
-        return userRepository.createUser(user);
+        return userRepository.save(user);
     }
 
     public User redactUser(Long userId, UserPatchDto userPatchDto) {
-        User user = userRepository.getUserById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
         if (userPatchDto.getEmail() != null) {
             emailDuplicateCheck(userPatchDto.getEmail());
@@ -28,23 +29,25 @@ public class UserService {
         if (userPatchDto.getName() != null) {
             user.setName(userPatchDto.getName());
         }
-        return userRepository.redactUser(userId, user);
+        return userRepository.save(user);
     }
 
     public User getUserById(Long userId) {
-        return userRepository.getUserById(userId);
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId.toString()));
     }
 
     public List<User> getAllUsers() {
-        return userRepository.getAllUsers();
+        return userRepository.findAll();
     }
 
     public void deleteUser(Long userId) {
-        userRepository.deleteUser(userId);
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId.toString()));
+        userRepository.deleteById(userId);
     }
 
     private void emailDuplicateCheck(String email) {
-        userRepository.checkUserByEmail(email);
+        userRepository.findByEmail(email).ifPresent(user -> {
+            throw new EmailAlreadyExistException(email);
+        });
     }
-
 }
