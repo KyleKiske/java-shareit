@@ -1,13 +1,13 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserIsNotBookerException;
-import ru.practicum.shareit.exception.WrongOwnerException;
+import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.request.RequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -22,16 +22,24 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
     private final BookingMapper bookingMapper;
     private final CommentMapper commentMapper;
     private final UserService userService;
-    private final CommentService commentService;
 
-    public Item addItem(long userId, ItemDto itemDto) {
+    public ItemWithRequestDto addItem(long userId, ItemCreateDto itemCreateDto) {
         User user = userService.getUserById(userId);
-        Item item = itemMapper.dtoToItem(itemDto);
+        if (user == null) {
+            throw new UserNotFoundException(String.valueOf(userId));
+        }
+        Item item = itemMapper.dtoToItem(itemCreateDto);
         item.setOwner(user);
-        return itemRepository.save(item);
+        if (itemCreateDto.getRequestId() != null) {
+            requestRepository.findById(itemCreateDto.getRequestId()).ifPresentOrElse(item::setRequest, () -> {
+                throw new RequestNotFoundException(String.valueOf(itemCreateDto.getRequestId()));
+            });
+        }
+        return itemMapper.itemToRequestDto(itemRepository.save(item));
     }
 
     public Item redactItem(long userId, long itemId, ItemPatchDto itemPatchDto) {
@@ -69,15 +77,15 @@ public class ItemService {
         return item;
     }
 
-    public List<Item> searchItem(String text) {
+    public List<Item> searchItem(String text, PageRequest pageRequest) {
         if (text.isBlank()) {
             return List.of();
         }
-        return itemRepository.findAllByText(text);
+        return itemRepository.findAllByText(text, pageRequest);
     }
 
-    public List<Item> getAllItemsOfUser(Long userId) {
-        List<Item> itemList = itemRepository.getAllByOwnerId(userId);
+    public List<Item> getAllItemsOfUser(Long userId, PageRequest pageRequest) {
+        List<Item> itemList = itemRepository.findAllByOwnerId(userId, pageRequest);
         for (Item item: itemList) {
             List<Booking> bookings = bookingRepository.findAllByItemIdOrderByStartAsc(item.getId());
 
@@ -91,15 +99,20 @@ public class ItemService {
         return itemList;
     }
 
-    public void deleteItem(long itemId) {
+    public Item deleteItem(long itemId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.valueOf(itemId)));
         itemRepository.deleteById(itemId);
+        return item;
     }
 
     public CommentDto addComment(long userId, long itemId, CommentPostDto commentPost) {
         User user = userService.getUserById(userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.valueOf(itemId)));
 
-        List<Booking> bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, LocalDateTime.now());
+        List<Booking> bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(
+                userId,
+                LocalDateTime.now(),
+                null);
 
         if (bookings.isEmpty()) {
             throw new UserIsNotBookerException(String.valueOf(userId));

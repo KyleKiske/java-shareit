@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.PaginationMaker;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -16,15 +17,17 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<Item> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.getAllItemsOfUser(userId);
+    public List<Item> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId,
+                                     @RequestParam(required = false) Integer from,
+                                     @RequestParam(required = false) Integer size) {
+        return itemService.getAllItemsOfUser(userId, PaginationMaker.makePageRequest(from, size));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Item createItem(@RequestHeader(name = "X-Sharer-User-Id") long userId,
-                           @Valid @RequestBody ItemDto itemDto) {
-        return itemService.addItem(userId, itemDto);
+    public ItemWithRequestDto createItem(@RequestHeader(name = "X-Sharer-User-Id") long userId,
+                           @Valid @RequestBody ItemCreateDto itemCreateDto) {
+        return itemService.addItem(userId, itemCreateDto);
     }
 
     @GetMapping("/{itemId}")
@@ -35,25 +38,27 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public Item redactItemInfo(@RequestHeader("X-Sharer-User-Id") long userId,
-                                @PathVariable long itemId,
-                                @Valid @RequestBody ItemPatchDto itemPatchDto) {
+                               @PathVariable long itemId,
+                               @Valid @RequestBody ItemPatchDto itemPatchDto) {
         return itemService.redactItem(userId, itemId, itemPatchDto);
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(@PathVariable long itemId) {
-        itemService.deleteItem(itemId);
+    public Item deleteItem(@PathVariable long itemId) {
+        return itemService.deleteItem(itemId);
     }
 
     @GetMapping("/search")
-    public List<Item> searchItem(@RequestParam String text) {
-        return itemService.searchItem(text);
+    public List<Item> searchItem(@RequestParam String text,
+                                 @RequestParam(required = false) Integer from,
+                                 @RequestParam(required = false) Integer size) {
+        return itemService.searchItem(text, PaginationMaker.makePageRequest(from, size));
     }
 
     @PostMapping("{itemId}/comment")
     public CommentDto addComment(@RequestHeader(name = "X-Sharer-User-Id") long userId,
-                              @PathVariable long itemId,
-                              @Valid @RequestBody CommentPostDto comment) {
+                                 @PathVariable long itemId,
+                                 @Valid @RequestBody CommentPostDto comment) {
         return itemService.addComment(userId, itemId, comment);
     }
 }

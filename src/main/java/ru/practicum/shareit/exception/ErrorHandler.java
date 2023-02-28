@@ -25,13 +25,6 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(EmptyEmailException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleEmptyEmail(final EmptyEmailException e) {
-        log.error("400 {}", e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationsExceptions(MethodArgumentNotValidException e) {
@@ -99,6 +92,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUserIsNotBookerException(final UserIsNotBookerException e) {
         log.error("400 пользователь {} не бронировал эту вещь.", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(RequestNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleRequestNotFound(final RequestNotFoundException e) {
+        log.error("404 запрос вещи {} не найден", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 

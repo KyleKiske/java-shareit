@@ -40,9 +40,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void deleteUser(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId.toString()));
+    public User deleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId.toString()));
         userRepository.deleteById(userId);
+        return user;
     }
 
     private void emailDuplicateCheck(String email) {
