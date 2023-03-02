@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.TestObjectMaker;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,11 +34,11 @@ public class ItemServiceIntegrationTest {
 
         itemService.addItem(userTwo.getId(), itemCreateDto);
 
-        List<Item> items = itemService.getAllItemsOfUser(user.getId(), PageRequest.of(0, 5));
-        List<Item> itemsUserTwo = itemService.getAllItemsOfUser(userTwo.getId(), PageRequest.of(0, 5));
+        Page<Item> items = itemService.getAllItemsOfUser(user.getId(), PageRequest.of(0, 5));
+        Page<Item> itemsUserTwo = itemService.getAllItemsOfUser(userTwo.getId(), PageRequest.of(0, 5));
 
-        assertEquals(items.size(), 3);
-        assertEquals(itemsUserTwo.size(), 1);
+        assertEquals(items.getTotalElements(), 3);
+        assertEquals(itemsUserTwo.getTotalElements(), 1);
 
     }
 }

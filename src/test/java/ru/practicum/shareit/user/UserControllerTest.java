@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -159,19 +160,17 @@ class UserControllerTest {
     @Test
     void deleteUserById_expectSuccess() throws Exception {
         long userId = 1;
-        User user = TestObjectMaker.makeUser(userId);
-
-        when(userService.deleteUser(userId)).thenReturn(user);
 
         mvc.perform(delete("/users/" + userId))
                 .andExpect(status().isOk());
+        verify(userService).deleteUser(userId);
     }
 
     @Test
     void deleteUserById_expectUserNotFound() throws Exception {
         long userId = 1;
 
-        when(userService.deleteUser(userId)).thenThrow(new UserNotFoundException(""));
+        Mockito.doThrow(new UserNotFoundException("")).when(userService).deleteUser(userId);
 
         mvc.perform(delete("/users/" + userId))
                 .andExpect(status().isNotFound());

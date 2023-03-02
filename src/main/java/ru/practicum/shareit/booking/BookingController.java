@@ -42,7 +42,7 @@ public class BookingController {
                                              @RequestParam(defaultValue = "ALL",  name = "state") String state,
                                              @RequestParam(required = false) Integer from,
                                              @RequestParam(required = false) Integer size) {
-        return bookingService.getBookingsByBooker(userId, state, PaginationMaker.makePageRequest(from, size));
+        return bookingService.getBookingsByBooker(userId, state, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
     @GetMapping("/owner")
@@ -50,7 +50,7 @@ public class BookingController {
                                            @RequestParam(defaultValue = "ALL", name = "state") String state,
                                            @RequestParam(required = false) Integer from,
                                            @RequestParam(required = false) Integer size) {
-        return bookingService.getBookingsByOwner(userId, state, PaginationMaker.makePageRequest(from, size));
+        return bookingService.getBookingsByOwner(userId, state, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
 }

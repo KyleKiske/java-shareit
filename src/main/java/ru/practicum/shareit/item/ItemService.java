@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
@@ -77,15 +78,15 @@ public class ItemService {
         return item;
     }
 
-    public List<Item> searchItem(String text, PageRequest pageRequest) {
+    public Page<Item> searchItem(String text, PageRequest pageRequest) {
         if (text.isBlank()) {
-            return List.of();
+            return Page.empty();
         }
         return itemRepository.findAllByText(text, pageRequest);
     }
 
-    public List<Item> getAllItemsOfUser(Long userId, PageRequest pageRequest) {
-        List<Item> itemList = itemRepository.findAllByOwnerId(userId, pageRequest);
+    public Page<Item> getAllItemsOfUser(Long userId, PageRequest pageRequest) {
+        Page<Item> itemList = itemRepository.findAllByOwnerId(userId, pageRequest);
         for (Item item: itemList) {
             List<Booking> bookings = bookingRepository.findAllByItemIdOrderByStartAsc(item.getId());
 
@@ -99,17 +100,16 @@ public class ItemService {
         return itemList;
     }
 
-    public Item deleteItem(long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.valueOf(itemId)));
+    public void deleteItem(long itemId) {
+        itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.valueOf(itemId)));
         itemRepository.deleteById(itemId);
-        return item;
     }
 
     public CommentDto addComment(long userId, long itemId, CommentPostDto commentPost) {
         User user = userService.getUserById(userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ItemNotFoundException(String.valueOf(itemId)));
 
-        List<Booking> bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(
+        Page<Booking> bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(
                 userId,
                 LocalDateTime.now(),
                 null);

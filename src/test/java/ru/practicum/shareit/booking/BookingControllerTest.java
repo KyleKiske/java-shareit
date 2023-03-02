@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -107,7 +108,7 @@ class BookingControllerTest {
                 TestObjectMaker.makeBooking(3, null, null)
         );
 
-        when(bookingService.getBookingsByBooker(anyLong(), anyString(), any())).thenReturn(bookingList);
+        when(bookingService.getBookingsByBooker(anyLong(), anyString(), any())).thenReturn(new PageImpl<>(bookingList));
 
         mvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", userId)
@@ -127,7 +128,7 @@ class BookingControllerTest {
                 TestObjectMaker.makeBooking(3, null, null)
         );
 
-        when(bookingService.getBookingsByOwner(anyLong(), anyString(), any())).thenReturn(bookingList);
+        when(bookingService.getBookingsByOwner(anyLong(), anyString(), any())).thenReturn(new PageImpl<>(bookingList));
 
         mvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", userId)

@@ -1,11 +1,14 @@
 package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.RequestNotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.ItemWithRequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -38,27 +41,34 @@ public class RequestService {
         List<RequestDto> requestDtoList = requestList.stream()
                 .map(requestMapper::requestToRequestDto).collect(Collectors.toList());
 
-        requestDtoList.forEach(
-                requestDto -> requestDto.setItems(
-                        itemRepository.findAllByRequestId(requestDto.getId()).stream()
-                                .map(itemMapper::itemToRequestDto).collect(Collectors.toList())));
+        List<ItemWithRequestDto> allLinkedItems = itemRepository.findAllByRequestIdIsIn(requestList.stream()
+                .map(Request::getId)
+                .collect(Collectors.toList())).stream().map(itemMapper::itemToRequestDto).collect(Collectors.toList());
+
+        requestDtoList.forEach(requestDto -> requestDto.setItems(allLinkedItems.stream()
+                .filter(item -> item.getRequestId().equals(requestDto.getId()))
+                .collect(Collectors.toList())));
+
         return requestDtoList;
     }
 
-    public List<RequestDto> getAllRequestOfOtherUsers(long userId, PageRequest pageRequest) {
+    public Page<RequestDto> getAllRequestOfOtherUsers(long userId, PageRequest pageRequest) {
         userService.getUserById(userId);
-        List<Request> requestList = requestRepository.findAllByRequesterIdIsNotOrderByCreatedDesc(
+        Page<Request> requestList = requestRepository.findAllByRequesterIdIsNotOrderByCreatedDesc(
                 userId, pageRequest);
 
         List<RequestDto> requestDtoList = requestList.stream()
                 .map(requestMapper::requestToRequestDto).collect(Collectors.toList());
 
-        requestDtoList.forEach(
-                requestDto -> requestDto.setItems(
-                        itemRepository.findAllByRequestId(requestDto.getId()).stream()
-                                .map(itemMapper::itemToRequestDto).collect(Collectors.toList())));
+        List<ItemWithRequestDto> allLinkedItems = itemRepository.findAllByRequestIdIsIn(requestList.stream()
+                .map(Request::getId)
+                .collect(Collectors.toList())).stream().map(itemMapper::itemToRequestDto).collect(Collectors.toList());
 
-        return requestDtoList;
+        requestDtoList.forEach(requestDto -> requestDto.setItems(allLinkedItems.stream()
+                .filter(item -> item.getRequestId().equals(requestDto.getId()))
+                .collect(Collectors.toList())));
+
+        return new PageImpl<>(requestDtoList);
     }
 
     public RequestDto getRequestInfo(long userId, long requestId) {

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.*;
@@ -10,7 +11,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -79,7 +79,7 @@ public class BookingService {
         return booking;
     }
 
-    public List<Booking> getBookingsByOwner(long userId, String state, PageRequest pageRequest) {
+    public Page<Booking> getBookingsByOwner(long userId, String state, PageRequest pageRequest) {
         userService.getUserById(userId);
         switch (state) {
             case "ALL":
@@ -117,7 +117,7 @@ public class BookingService {
         }
     }
 
-    public List<Booking> getBookingsByBooker(long bookerId, String state, PageRequest pageRequest) {
+    public Page<Booking> getBookingsByBooker(long bookerId, String state, PageRequest pageRequest) {
         userService.getUserById(bookerId);
         switch (state) {
             case "ALL":

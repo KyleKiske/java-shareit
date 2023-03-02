@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.TestObjectMaker;
 import ru.practicum.shareit.booking.*;
@@ -17,7 +19,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -193,8 +194,8 @@ class ItemServiceTest {
                 TestObjectMaker.makeItem(2, null, true),
                 TestObjectMaker.makeItem(3, null, true));
 
-        when(itemRepository.findAllByText(anyString(), any())).thenReturn(itemList);
-        assertEquals(itemService.searchItem("search", PageRequest.of(0,5)), itemList);
+        when(itemRepository.findAllByText(anyString(), any())).thenReturn(new PageImpl<>(itemList));
+        assertEquals(itemService.searchItem("search", PageRequest.of(0,5)), new PageImpl<>(itemList));
     }
 
     @Test
@@ -207,9 +208,10 @@ class ItemServiceTest {
                 TestObjectMaker.makeItem(2, null, true),
                 TestObjectMaker.makeItem(3, null, true));
 
-        when(itemRepository.findAllByOwnerId(userId, PageRequest.of(from / size, size))).thenReturn(itemList);
+        when(itemRepository.findAllByOwnerId(userId, PageRequest.of(from / size, size)))
+                .thenReturn(new PageImpl<>(itemList));
 
-        assertThat(itemService.getAllItemsOfUser(userId, PageRequest.of(from / size, size))).isEqualTo(itemList);
+        assertThat(itemService.getAllItemsOfUser(userId, PageRequest.of(from / size, size)).toList()).isEqualTo(itemList);
     }
 
     @Test
@@ -229,8 +231,8 @@ class ItemServiceTest {
         Item item = TestObjectMaker.makeItem(itemId, user, true);
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-
-        assertEquals(itemService.deleteItem(itemId), item);
+        itemService.deleteItem(itemId);
+        verify(itemRepository).deleteById(userId);
     }
 
     @Test
@@ -246,9 +248,9 @@ class ItemServiceTest {
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(commentRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(), any()))
-                .thenReturn(List
-                        .of(new Booking(1L, LocalDateTime.now(), LocalDateTime.now().plusDays(1),
-                                BookingStatus.APPROVED, item, booker)));
+                .thenReturn(new PageImpl<>(List
+                                .of(new Booking(1L, LocalDateTime.now(), LocalDateTime.now().plusDays(1),
+                                BookingStatus.APPROVED, item, booker))));
 
         CommentDto commentDto = itemService.addComment(userId, itemId, commentPostDto);
 
@@ -267,7 +269,7 @@ class ItemServiceTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(), any(), any()))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(Page.empty());
 
         assertThrows(UserIsNotBookerException.class, () -> itemService.addComment(notBooker.getId(), itemId, commentPostDto));
     }

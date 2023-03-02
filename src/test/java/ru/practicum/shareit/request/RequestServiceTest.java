@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.TestObjectMaker;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -73,7 +74,7 @@ class RequestServiceTest {
         );
 
         when(userService.getUserById(userId)).thenReturn(user);
-        when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of());
+        when(itemRepository.findAllByRequestIdIsIn(anyList())).thenReturn(List.of());
         when(requestRepository.findAllByRequesterIdOrderByCreatedDesc(userId)).thenReturn(requestList);
 
         assertEquals(requestService.getAllRequestInfoOfUser(userId), requestList.stream()
@@ -98,10 +99,10 @@ class RequestServiceTest {
         when(requestRepository.findAllByRequesterIdIsNotOrderByCreatedDesc(
                 user2.getId(),
                 PageRequest.of(from / size, size)))
-                .thenReturn(requestList);
+                .thenReturn(new PageImpl<>(requestList));
 
         assertEquals(requestService.getAllRequestOfOtherUsers(
-                    user2.getId(), PageRequest.of(from / size, size)), requestList.stream()
+                    user2.getId(), PageRequest.of(from / size, size)).toList(), requestList.stream()
                 .map(requestMapper::requestToRequestDto)
                 .peek(requestDto -> requestDto.setItems(List.of()))
                 .collect(Collectors.toList()));
@@ -124,7 +125,6 @@ class RequestServiceTest {
 
     @Test
     void getRequestInfo_expectRequestNotFoundException() {
-        long requestId = 1;
         long userId = 1;
         User user = TestObjectMaker.makeUser(userId);
         Request request = new Request(1L, "Help me, demons!", user, LocalDateTime.now());

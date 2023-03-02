@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.TestObjectMaker;
 import ru.practicum.shareit.exception.*;
@@ -28,7 +29,6 @@ class BookingServiceTest {
 
     @Mock
     private BookingRepository bookingRepository;
-
     @Mock
     private ItemService itemService;
     @Mock
@@ -251,9 +251,10 @@ class BookingServiceTest {
 
         when(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(
                 userId,
-                PageRequest.of(from / size, size))).thenReturn(bookingList);
+                PageRequest.of(from / size, size))).thenReturn(new PageImpl<>(bookingList));
 
-        assertEquals(bookingList, bookingService.getBookingsByOwner(userId, "ALL", PageRequest.of(from / size, size)));
+        assertEquals(bookingList, bookingService
+                .getBookingsByOwner(userId, "ALL", PageRequest.of(from / size, size)).toList());
     }
 
 
@@ -319,9 +320,10 @@ class BookingServiceTest {
 
         when(bookingRepository.findAllByBookerIdOrderByStartDesc(
                 userId,
-                PageRequest.of(1, 5))).thenReturn(bookingList);
+                PageRequest.of(1, 5))).thenReturn(new PageImpl<>(bookingList));
 
-        assertEquals(bookingList, bookingService.getBookingsByBooker(userId, "ALL", PageRequest.of(1, 5)));
+        assertEquals(bookingList, bookingService
+                .getBookingsByBooker(userId, "ALL", PageRequest.of(1, 5)).toList());
     }
 
     @Test

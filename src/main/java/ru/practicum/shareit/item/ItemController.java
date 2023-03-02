@@ -20,7 +20,7 @@ public class ItemController {
     public List<Item> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId,
                                      @RequestParam(required = false) Integer from,
                                      @RequestParam(required = false) Integer size) {
-        return itemService.getAllItemsOfUser(userId, PaginationMaker.makePageRequest(from, size));
+        return itemService.getAllItemsOfUser(userId, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
     @PostMapping
@@ -44,15 +44,15 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public Item deleteItem(@PathVariable long itemId) {
-        return itemService.deleteItem(itemId);
+    public void deleteItem(@PathVariable long itemId) {
+        itemService.deleteItem(itemId);
     }
 
     @GetMapping("/search")
     public List<Item> searchItem(@RequestParam String text,
                                  @RequestParam(required = false) Integer from,
                                  @RequestParam(required = false) Integer size) {
-        return itemService.searchItem(text, PaginationMaker.makePageRequest(from, size));
+        return itemService.searchItem(text, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
     @PostMapping("{itemId}/comment")

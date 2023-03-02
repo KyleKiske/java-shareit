@@ -112,7 +112,10 @@ class UserServiceTest {
     void deleteUser_expectDeletedUser() {
         long userId = 1;
         User user = TestObjectMaker.makeUser(userId);
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        assertThat(userService.deleteUser(userId)).isEqualTo(user);
+
+        userService.deleteUser(userId);
+        verify(userRepository).deleteById(userId);
     }
 }

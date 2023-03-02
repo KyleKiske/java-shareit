@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,7 +56,7 @@ class ItemControllerTest {
                 TestObjectMaker.makeItem(2, null, true),
                 TestObjectMaker.makeItem(3, null, true));
 
-        when(itemService.getAllItemsOfUser(anyLong(), any())).thenReturn(itemList);
+        when(itemService.getAllItemsOfUser(anyLong(), any())).thenReturn(new PageImpl<>(itemList));
 
         mvc.perform(get("/items")
                         .header("X-Sharer-User-Id", userId)
@@ -164,21 +166,22 @@ class ItemControllerTest {
     void deleteItem() throws Exception {
         Item item = TestObjectMaker.makeItem(1, null, true);
 
-        when(itemService.deleteItem(item.getId())).thenReturn(item);
-
         mvc.perform(delete("/items/" + item.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(item)));
+                .andExpect(status().isOk());
+
+        verify(itemService).deleteItem(item.getId());
     }
 
     @Test
     void deleteItem_expectItemNotFound() throws Exception {
         Item item = TestObjectMaker.makeItem(1, null, true);
 
-        when(itemService.deleteItem(item.getId())).thenThrow(new ItemNotFoundException(""));
+        Mockito.doThrow(new ItemNotFoundException("")).when(itemService).deleteItem(item.getId());
 
         mvc.perform(delete("/items/" + item.getId()))
                 .andExpect(status().isNotFound());
+
+        verify(itemService).deleteItem(item.getId());
     }
 
 
@@ -189,7 +192,7 @@ class ItemControllerTest {
                 TestObjectMaker.makeItem(2, null, true),
                 TestObjectMaker.makeItem(3, null, true));
 
-        when(itemService.searchItem("test", PageRequest.of(0, 5))).thenReturn(itemList);
+        when(itemService.searchItem("test", PageRequest.of(0, 5))).thenReturn(new PageImpl<>(itemList));
 
         mvc.perform(get("/items/search")
                         .param("text", "test")

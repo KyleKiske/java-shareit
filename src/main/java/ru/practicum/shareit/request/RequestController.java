@@ -31,7 +31,7 @@ public class RequestController {
     public List<RequestDto> getRequestsOfOtherUsers(@RequestHeader("X-Sharer-User-Id") long userId,
                                                  @RequestParam(required = false) Integer from,
                                                  @RequestParam(required = false) Integer size) {
-        return requestService.getAllRequestOfOtherUsers(userId, PaginationMaker.makePageRequest(from, size));
+        return requestService.getAllRequestOfOtherUsers(userId, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
     @GetMapping("/{requestId}")
