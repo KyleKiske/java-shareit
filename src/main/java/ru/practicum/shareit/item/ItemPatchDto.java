@@ -1,8 +1,12 @@
 package ru.practicum.shareit.item;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemPatchDto {
     long id;
     String name;

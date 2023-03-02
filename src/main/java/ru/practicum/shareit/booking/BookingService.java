@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.Item;
@@ -9,7 +11,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,10 @@ public class BookingService {
         Item item = itemService.getItemById(bookingDto.getItemId(), userId);
 
         Booking booking = bookingMapper.dtoToBooking(bookingDto);
+
+        if (!item.getAvailable()) {
+            throw new ItemNotAvailableException(item.getId().toString());
+        }
 
         if (item.getOwner().getId().equals(booker.getId())) {
             throw new WrongUserException("Нельзя бронировать вещи у себя самого");
@@ -42,13 +47,9 @@ public class BookingService {
                             + booking.getEnd().toString());
         }
 
-        if (item.getAvailable()) {
-            booking.setStatus(BookingStatus.WAITING);
-            booking.setBooker(booker);
-            booking.setItem(item);
-        } else {
-            throw new ItemNotAvailableException(item.getId().toString());
-        }
+        booking.setStatus(BookingStatus.WAITING);
+        booking.setBooker(booker);
+        booking.setItem(item);
 
         return bookingRepository.save(booking);
     }
@@ -78,41 +79,77 @@ public class BookingService {
         return booking;
     }
 
-    public List<Booking> getBookingsByOwner(long userId, String state) {
+    public Page<Booking> getBookingsByOwner(long userId, String state, PageRequest pageRequest) {
         userService.getUserById(userId);
         switch (state) {
             case "ALL":
-                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId);
+                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(
+                        userId,
+                        pageRequest);
             case "CURRENT":
-                return bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, LocalDateTime.now(), LocalDateTime.now());
+                return bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                        userId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        pageRequest);
             case "PAST":
-                return bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, LocalDateTime.now());
+                return bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(
+                        userId,
+                        LocalDateTime.now(),
+                        pageRequest);
             case "FUTURE":
-                return bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
+                return bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(
+                        userId,
+                        LocalDateTime.now(),
+                        pageRequest);
             case "WAITING":
-                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(
+                        userId,
+                        BookingStatus.WAITING,
+                        pageRequest);
             case "REJECTED":
-                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(
+                        userId,
+                        BookingStatus.REJECTED,
+                        pageRequest);
             default:
                 throw new UnsupportedStateException("Unknown state: " + state);
         }
     }
 
-    public List<Booking> getBookingsByBooker(long bookerId, String state) {
+    public Page<Booking> getBookingsByBooker(long bookerId, String state, PageRequest pageRequest) {
         userService.getUserById(bookerId);
         switch (state) {
             case "ALL":
-                return bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);
+                return bookingRepository.findAllByBookerIdOrderByStartDesc(
+                        bookerId,
+                        pageRequest);
             case "CURRENT":
-                return bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, LocalDateTime.now(), LocalDateTime.now());
+                return bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                        bookerId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        pageRequest);
             case "PAST":
-                return bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, LocalDateTime.now());
+                return bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(
+                        bookerId,
+                        LocalDateTime.now(),
+                        pageRequest);
             case "FUTURE":
-                return bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, LocalDateTime.now());
+                return bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(
+                        bookerId,
+                        LocalDateTime.now(),
+                        pageRequest);
             case "WAITING":
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING);
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
+                        bookerId,
+                        BookingStatus.WAITING,
+                        pageRequest);
             case "REJECTED":
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED);
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
+                        bookerId,
+                        BookingStatus.REJECTED,
+                        pageRequest);
             default:
                 throw new UnsupportedStateException("Unknown state: " + state);
         }

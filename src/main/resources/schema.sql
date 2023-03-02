@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS items;
+DROP TABLE IF EXISTS requests;
 DROP TABLE IF EXISTS users;
 DROP TYPE IF EXISTS BOOKING_STATUS;
 
@@ -14,6 +15,15 @@ CREATE TABLE IF NOT EXISTS users
     name    VARCHAR(255)        NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS requests
+(
+    request_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
+    description  VARCHAR(512) NOT NULL,
+    requester_id BIGINT       NOT NULL,
+    created      TIMESTAMP    NOT NULL,
+    FOREIGN KEY (requester_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS items
 (
     item_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -21,6 +31,8 @@ CREATE TABLE IF NOT EXISTS items
     description VARCHAR(512) NOT NULL,
     available   BOOLEAN      NOT NULL,
     owner_id    BIGINT       NOT NULL,
+    request_id  BIGINT,
+    FOREIGN KEY (request_id) REFERENCES requests (request_id) ON DELETE NO ACTION,
     FOREIGN KEY (owner_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 

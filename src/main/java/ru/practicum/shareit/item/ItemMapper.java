@@ -5,31 +5,39 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public class ItemMapper {
 
-    public Item dtoToItem(ItemDto itemDto) {
-        if (itemDto == null) {
+    public Item dtoToItem(ItemCreateDto itemCreateDto) {
+        if (itemCreateDto == null) {
             return null;
         }
         Item item = new Item();
 
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
+        item.setName(itemCreateDto.getName());
+        item.setDescription(itemCreateDto.getDescription());
+        item.setAvailable(itemCreateDto.getAvailable());
 
         return item;
     }
 
-    public Item patchDtoToItem(ItemPatchDto itemPatchDto) {
-        if (itemPatchDto == null) {
+    public ItemWithRequestDto itemToRequestDto(Item item) {
+        if (item == null) {
             return null;
         }
+        ItemWithRequestDto itemWithRequestDto = new ItemWithRequestDto();
+        itemWithRequestDto.setId(item.getId());
+        itemWithRequestDto.setOwner(item.getOwner());
+        itemWithRequestDto.setName(item.getName());
+        itemWithRequestDto.setDescription(item.getDescription());
+        itemWithRequestDto.setAvailable(item.getAvailable());
+        if (item.getRequest() != null) {
+            itemWithRequestDto.setRequestId(item.getRequest().getId());
+        } else {
+            itemWithRequestDto.setRequestId(null);
+        }
+        itemWithRequestDto.setLastBooking(item.getLastBooking());
+        itemWithRequestDto.setNextBooking(item.getNextBooking());
+        itemWithRequestDto.setComments(item.getComments());
 
-        Item item = new Item();
-
-        item.setId(itemPatchDto.getId());
-        item.setName(itemPatchDto.getName());
-        item.setDescription(itemPatchDto.getDescription());
-        item.setAvailable(itemPatchDto.getAvailable());
-
-        return item;
+        return itemWithRequestDto;
     }
+
 }

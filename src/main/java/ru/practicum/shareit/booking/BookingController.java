@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.PaginationMaker;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -23,7 +24,7 @@ public class BookingController {
         return bookingService.addBooking(userId, bookingDto);
     }
 
-    @PatchMapping({"/{bookingId}"})
+    @PatchMapping("/{bookingId}")
     public Booking changeBookingStatus(@RequestHeader(name = "X-Sharer-User-Id") long ownerId,
                                        @PathVariable long bookingId,
                                        @RequestParam boolean approved) {
@@ -38,14 +39,18 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> getBookingsOfBooker(@RequestHeader(name = "X-Sharer-User-Id") long userId,
-                                             @RequestParam(defaultValue = "ALL",  name = "state") String state) {
-        return bookingService.getBookingsByBooker(userId, state);
+                                             @RequestParam(defaultValue = "ALL",  name = "state") String state,
+                                             @RequestParam(required = false) Integer from,
+                                             @RequestParam(required = false) Integer size) {
+        return bookingService.getBookingsByBooker(userId, state, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
     @GetMapping("/owner")
     public List<Booking> getBookingOfOwner(@RequestHeader(name = "X-Sharer-User-Id") long userId,
-                                          @RequestParam(defaultValue = "ALL", name = "state") String state) {
-        return bookingService.getBookingsByOwner(userId, state);
+                                           @RequestParam(defaultValue = "ALL", name = "state") String state,
+                                           @RequestParam(required = false) Integer from,
+                                           @RequestParam(required = false) Integer size) {
+        return bookingService.getBookingsByOwner(userId, state, PaginationMaker.makePageRequest(from, size)).toList();
     }
 
 }
